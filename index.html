@@ -199,4 +199,738 @@
             margin-bottom: 14px;
             transition: all 0.2s ease;
             cursor: pointer;
-            box-shadow: 0
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .place-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+            border-color: var(--primary-green);
+        }
+
+        .place-card.active {
+            border-color: var(--primary-green);
+            background-color: #f4f6f1;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+
+        .place-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+            padding-right: 30px;
+        }
+
+        .like-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .like-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .place-category {
+            font-size: 0.75rem;
+            color: var(--primary-green);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .place-address {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-green);
+            color: #ffffff;
+            border-color: var(--primary-green);
+        }
+
+        .action-btn.danger {
+            color: #d9534f;
+        }
+
+        .action-btn.danger:hover {
+            background-color: #d9534f;
+            color: #ffffff;
+        }
+
+        /* 💮 감성 아날로그 도장 (스탬프) 스타일 */
+        .stamp-mark {
+            display: inline-block;
+            padding: 4px 10px;
+            border: 2px solid var(--stamp-red);
+            color: var(--stamp-red);
+            font-weight: 800;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            transform: rotate(-8deg);
+            opacity: 0.85;
+            background-color: rgba(192, 57, 43, 0.05);
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
+
+        .passport-review {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            font-style: italic;
+            border-left: 3px solid var(--primary-green);
+        }
+
+        .passport-date {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        /* =========================================================
+           4. 오른쪽 지도 및 모달 레이아웃
+           ========================================================= */
+        .map-container {
+            flex: 1;
+            height: 100%;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .status-message {
+            text-align: center;
+            color: var(--text-sub);
+            padding: 40px 10px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* 방문 후기 작성 모달 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .modal-textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            resize: none;
+            font-size: 0.9rem;
+            outline: none;
+            margin-bottom: 16px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column-reverse;
+            }
+            .sidebar {
+                width: 100%;
+                height: 55%;
+            }
+            .map-container {
+                height: 45%;
+            }
+        }
+    </style>
+
+    <!-- 카카오 지도 API (services 라이브러리) -->
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=8d6ef96ff9af00addd82d677a395ed91&libraries=services"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- 왼쪽 사이드바 -->
+        <aside class="sidebar">
+            <header class="header">
+                <h1>🏛️ 뮤지엄 패스포트</h1>
+                <p>나만의 문화시설 방문 스탬프 북</p>
+            </header>
+
+            <!-- 메인 메뉴 3가지 (탐색 / 찜한 장소 / 나의 여권) -->
+            <nav class="main-nav">
+                <button class="main-nav-btn active" id="navSearch" onclick="switchView('search')">🔍 문화시설 탐색</button>
+                <button class="main-nav-btn" id="navWish" onclick="switchView('wish')">❤️ 찜한 장소</button>
+                <button class="main-nav-btn" id="navPassport" onclick="switchView('passport')">📖 나의 여권</button>
+            </nav>
+
+            <!-- 탐색 전용 컨트롤 (지역 검색 + 4개 탭) -->
+            <div id="searchControls" class="controls-section">
+                <div class="search-box">
+                    <input type="text" id="keywordInput" class="search-input" placeholder="지역명 검색 (예: 고양시, 파주시, 종로구)" onkeypress="handleKeyPress(event)">
+                    <button class="search-btn" onclick="searchPlacesByKeyword()">검색</button>
+                </div>
+                <div class="category-tabs">
+                    <button class="cat-btn active" onclick="selectCategory('박물관', '🏛️', this)">
+                        <span>🏛️</span><span>박물관</span>
+                    </button>
+                    <button class="cat-btn" onclick="selectCategory('미술관', '🎨', this)">
+                        <span>🎨</span><span>미술관</span>
+                    </button>
+                    <button class="cat-btn" onclick="selectCategory('역사관', '📜', this)">
+                        <span>📜</span><span>역사관</span>
+                    </button>
+                    <button class="cat-btn" onclick="selectCategory('과학', '🧪', this)">
+                        <span>🧪</span><span>과학관</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 스크롤 가능한 결과 카드 목록 -->
+            <div id="resultsList" class="results-container"></div>
+        </aside>
+
+        <!-- 오른쪽 카카오 지도 -->
+        <main class="map-container">
+            <div id="map"></div>
+        </main>
+    </div>
+
+    <!-- 방문 인증 / 감상평 작성 모달 창 -->
+    <div id="reviewModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalPlaceTitle">방문 인증하기</h3>
+            <textarea id="reviewText" class="modal-textarea" placeholder="방문 날짜나 느낌, 감상평을 자유롭게 적어보세요!"></textarea>
+            <div class="modal-buttons">
+                <button class="action-btn" onclick="closeReviewModal()">취소</button>
+                <button class="action-btn" style="background-color: var(--primary-green); color: #fff;" onclick="saveVisitRecord()">스탬프 찍기 💮</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 글로벌 변수 설정
+        let map;
+        let placesService;
+        let infoWindow;
+        let searchMarkers = [];
+        let myLocationMarker = null;
+
+        // 현재 선택된 메뉴 및 카테고리 상태
+        let currentView = 'search'; // 'search', 'wish', 'passport'
+        let currentCategory = '박물관';
+        let currentEmoji = '🏛️';
+        let currentTargetPlace = null; // 모달용 임시 저장 변수
+
+        // 로컬스토리지 키
+        const STORAGE_WISH = 'museum_passport_wishlist';
+        const STORAGE_VISIT = 'museum_passport_visits';
+
+        // 서울시청 기본 좌표
+        const DEFAULT_LAT = 37.5665;
+        const DEFAULT_LNG = 126.9780;
+
+        /**
+         * 1. 페이지 로드 초기화
+         */
+        window.onload = function() {
+            kakao.maps.load(function() {
+                initMap();
+            });
+        };
+
+        /**
+         * 2. 카카오 지도 초기화
+         */
+        function initMap() {
+            const mapContainer = document.getElementById('map');
+            const mapOptions = {
+                center: new kakao.maps.LatLng(DEFAULT_LAT, DEFAULT_LNG),
+                level: 5 // 요구사항: 레벨 5
+            };
+
+            map = new kakao.maps.Map(mapContainer, mapOptions);
+            placesService = new kakao.maps.services.Places();
+            infoWindow = new kakao.maps.InfoWindow({ zIndex: 2 });
+
+            getUserLocation();
+        }
+
+        /**
+         * 3. 현재 사용자 위치 구하기
+         */
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const currentPos = new kakao.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                        map.setCenter(currentPos);
+                        displayMyLocationMarker(currentPos);
+                        searchCategoryPlaces(); // 내 위치 중심 첫 검색
+                    },
+                    function(error) {
+                        console.warn('위치 정보를 불러오지 못해 기본 좌표로 검색합니다.');
+                        searchCategoryPlaces();
+                    }
+                );
+            } else {
+                searchCategoryPlaces();
+            }
+        }
+
+        /**
+         * 4. 현재 위치 마커 표시
+         */
+        function displayMyLocationMarker(position) {
+            if (myLocationMarker) myLocationMarker.setMap(null);
+
+            myLocationMarker = new kakao.maps.Marker({
+                map: map,
+                position: position
+            });
+
+            const content = '<div style="padding:4px 8px; font-size:11px; font-weight:bold; color:#546243;">📍 현재 내 위치</div>';
+            const locationInfoWindow = new kakao.maps.InfoWindow({ content: content });
+            locationInfoWindow.open(map, myLocationMarker);
+        }
+
+        /**
+         * 5. 탭 메뉴 전환 (탐색 / 찜한 장소 / 나의 여권)
+         */
+        function switchView(viewName) {
+            currentView = viewName;
+            document.querySelectorAll('.main-nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('searchControls').style.display = viewName === 'search' ? 'block' : 'none';
+
+            if (viewName === 'search') {
+                document.getElementById('navSearch').classList.add('active');
+                searchCategoryPlaces();
+            } else if (viewName === 'wish') {
+                document.getElementById('navWish').classList.add('active');
+                renderWishlist();
+            } else if (viewName === 'passport') {
+                document.getElementById('navPassport').classList.add('active');
+                renderPassport();
+            }
+        }
+
+        /**
+         * 6. 카테고리 탭 선택 (박물관 🏛️, 미술관 🎨, 역사관 📜, 과학관 🧪)
+         */
+        function selectCategory(catName, emoji, btnEl) {
+            currentCategory = catName;
+            currentEmoji = emoji;
+
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            btnEl.classList.add('active');
+
+            searchCategoryPlaces();
+        }
+
+        /**
+         * 7. 검색어 입력 처리 (지역명 검색)
+         */
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') searchPlacesByKeyword();
+        }
+
+        function searchPlacesByKeyword() {
+            const keyword = document.getElementById('keywordInput').value.trim();
+            if (!keyword) {
+                searchCategoryPlaces();
+                return;
+            }
+
+            // 지역명 + 카테고리 조합 검색 (예: "고양시 박물관")
+            const searchPattern = `${keyword} ${currentCategory}`;
+            placesService.keywordSearch(searchPattern, placesSearchCallback);
+        }
+
+        function searchCategoryPlaces() {
+            // 현재 지도 중심 주변으로 선택된 카테고리 검색
+            placesService.keywordSearch(currentCategory, placesSearchCallback, {
+                location: map.getCenter()
+            });
+        }
+
+        /**
+         * 8. 검색 결과 콜백
+         */
+        function placesSearchCallback(data, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                displayPlaces(data);
+            } else {
+                clearMarkers();
+                showStatusMessage('검색 결과가 없습니다. 다른 검색어나 지역을 입력해보세요.');
+            }
+        }
+
+        /**
+         * 9. 장소 결과 표시 및 이모지 커스텀 마커 생성
+         */
+        function displayPlaces(places) {
+            const listEl = document.getElementById('resultsList');
+            clearMarkers();
+            listEl.innerHTML = '';
+
+            const bounds = new kakao.maps.LatLngBounds();
+
+            places.forEach((place, index) => {
+                const pos = new kakao.maps.LatLng(place.y, place.x);
+                const marker = createCustomEmojiMarker(pos, currentEmoji);
+
+                bounds.extend(pos);
+
+                const cardEl = createPlaceCard(place, false);
+                
+                // 마커 & 카드 상호작용
+                kakao.maps.event.addListener(marker, 'click', () => selectPlace(place, marker, cardEl));
+                cardEl.onclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON') selectPlace(place, marker, cardEl);
+                };
+
+                listEl.appendChild(cardEl);
+            });
+
+            map.setBounds(bounds);
+        }
+
+        /**
+         * 10. 캔버스를 이용한 이모지 커스텀 마커 생성
+         */
+        function createCustomEmojiMarker(position, emoji) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 38;
+            canvas.height = 38;
+            const ctx = canvas.getContext('2d');
+
+            // 동그란 원형 핀 배경
+            ctx.fillStyle = '#6b7a59';
+            ctx.beginPath();
+            ctx.arc(19, 19, 17, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 이모지 그리기
+            ctx.font = '18px serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, 19, 20);
+
+            const markerImage = new kakao.maps.MarkerImage(
+                canvas.toDataURL(),
+                new kakao.maps.Size(38, 38),
+                { offset: new kakao.maps.Point(19, 19) }
+            );
+
+            const marker = new kakao.maps.Marker({
+                position: position,
+                image: markerImage,
+                map: map
+            });
+
+            searchMarkers.push(marker);
+            return marker;
+        }
+
+        /**
+         * 11. 카드 HTML 요소 생성
+         */
+        function createPlaceCard(place, isPassport = false) {
+            const card = document.createElement('div');
+            card.className = 'place-card';
+
+            const wishList = getWishList();
+            const isLiked = wishList.some(item => item.id === place.id);
+            const address = place.road_address_name || place.address_name;
+
+            let actionButtonsHTML = '';
+            if (isPassport) {
+                actionButtonsHTML = `
+                    <div class="passport-review">" ${place.review || '방문 완료!'} "</div>
+                    <div class="passport-date">📅 ${place.visitDate}</div>
+                    <div class="stamp-mark">PASSPORT VERIFIED 💮</div>
+                    <div class="card-actions">
+                        <button class="action-btn" onclick="openReviewModal('${place.id}', true)">수정</button>
+                        <button class="action-btn danger" onclick="deleteVisitRecord('${place.id}')">삭제</button>
+                    </div>
+                `;
+            } else {
+                actionButtonsHTML = `
+                    <div class="card-actions">
+                        <button class="action-btn" onclick="openReviewModal('${place.id}')">방문 인증 💮</button>
+                        <a href="${place.place_url}" target="_blank" style="text-decoration:none;" class="action-btn">상세보기 🔗</a>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <button class="like-btn" onclick="toggleWish('${place.id}', '${escapeQuotes(place.place_name)}', '${escapeQuotes(address)}', '${place.x}', '${place.y}')">
+                    ${isLiked ? '❤️' : '🖤'}
+                </button>
+                <div class="place-category">${currentEmoji} ${place.category_name || '문화시설'}</div>
+                <div class="place-title">${place.place_name}</div>
+                <div class="place-address">📍 ${address}</div>
+                ${actionButtonsHTML}
+            `;
+
+            return card;
+        }
+
+        /**
+         * 12. 마커 / 카드 선택 시 인포윈도우 팝업 및 이동
+         */
+        function selectPlace(place, marker, cardEl) {
+            const pos = new kakao.maps.LatLng(place.y, place.x);
+            map.panTo(pos);
+
+            const address = place.road_address_name || place.address_name;
+            const popupContent = `
+                <div style="padding:12px; width:220px; font-size:12px; line-height:1.5;">
+                    <strong style="font-size:13px; color:#3a3835;">${currentEmoji} ${place.place_name}</strong><br>
+                    <span style="color:#736e65; font-size:11px;">📍 ${address}</span>
+                </div>
+            `;
+
+            infoWindow.setContent(popupContent);
+            infoWindow.open(map, marker);
+
+            document.querySelectorAll('.place-card').forEach(c => c.classList.remove('active'));
+            if (cardEl) {
+                cardEl.classList.add('active');
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        /**
+         * 13. 찜하기 기능 (Wishlist)
+         */
+        function getWishList() {
+            return JSON.parse(localStorage.getItem(STORAGE_WISH) || '[]');
+        }
+
+        function toggleWish(id, name, address, x, y) {
+            let list = getWishList();
+            const index = list.findIndex(item => item.id === id);
+
+            if (index > -1) {
+                list.splice(index, 1);
+            } else {
+                list.push({ id, place_name: name, address_name: address, x, y });
+            }
+
+            localStorage.setItem(STORAGE_WISH, JSON.stringify(list));
+
+            if (currentView === 'wish') renderWishlist();
+            else if (currentView === 'search') searchCategoryPlaces();
+        }
+
+        function renderWishlist() {
+            const listEl = document.getElementById('resultsList');
+            const wishList = getWishList();
+            clearMarkers();
+            listEl.innerHTML = '';
+
+            if (wishList.length === 0) {
+                showStatusMessage('아직 찜한 장소가 없습니다.<br>마음에 드는 장소의 하트(🖤)를 눌러보세요!');
+                return;
+            }
+
+            const bounds = new kakao.maps.LatLngBounds();
+
+            wishList.forEach(place => {
+                const pos = new kakao.maps.LatLng(place.y, place.x);
+                const marker = createCustomEmojiMarker(pos, '❤️');
+                bounds.extend(pos);
+
+                const cardEl = createPlaceCard(place, false);
+                cardEl.onclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON') selectPlace(place, marker, cardEl);
+                };
+
+                listEl.appendChild(cardEl);
+            });
+
+            map.setBounds(bounds);
+        }
+
+        /**
+         * 14. 방문 기록 & 스탬프 기능 (나의 여권)
+         */
+        function getVisitRecords() {
+            return JSON.parse(localStorage.getItem(STORAGE_VISIT) || '[]');
+        }
+
+        function openReviewModal(placeId, isEdit = false) {
+            const visits = getVisitRecords();
+            const existingRecord = visits.find(v => v.id === placeId);
+
+            if (isEdit && existingRecord) {
+                currentTargetPlace = existingRecord;
+                document.getElementById('reviewText').value = existingRecord.review;
+            } else {
+                // 현재 선택된 장소 찾기
+                currentTargetPlace = { id: placeId };
+                document.getElementById('reviewText').value = '';
+            }
+
+            document.getElementById('reviewModal').classList.add('active');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('active');
+            currentTargetPlace = null;
+        }
+
+        function saveVisitRecord() {
+            const reviewText = document.getElementById('reviewText').value.trim();
+            if (!reviewText) {
+                alert('감상평이나 방문 날짜를 남겨주세요!');
+                return;
+            }
+
+            let visits = getVisitRecords();
+            const existingIndex = visits.findIndex(v => v.id === currentTargetPlace.id);
+
+            const today = new Date().toLocaleDateString('ko-KR');
+
+            if (existingIndex > -1) {
+                visits[existingIndex].review = reviewText;
+                visits[existingIndex].visitDate = today;
+            } else {
+                visits.push({
+                    id: currentTargetPlace.id,
+                    place_name: currentTargetPlace.place_name || '문화시설',
+                    address_name: currentTargetPlace.address_name || '',
+                    review: reviewText,
+                    visitDate: today
+                });
+            }
+
+            localStorage.setItem(STORAGE_VISIT, JSON.stringify(visits));
+            closeReviewModal();
+            alert('스탬프가 정상적으로 찍혔습니다! 💮');
+
+            if (currentView === 'passport') renderPassport();
+        }
+
+        function deleteVisitRecord(placeId) {
+            if (!confirm('이 방문 기록과 스탬프를 삭제하시겠습니까?')) return;
+
+            let visits = getVisitRecords();
+            visits = visits.filter(v => v.id !== placeId);
+            localStorage.setItem(STORAGE_VISIT, JSON.stringify(visits));
+
+            renderPassport();
+        }
+
+        function renderPassport() {
+            const listEl = document.getElementById('resultsList');
+            const visits = getVisitRecords();
+            clearMarkers();
+            listEl.innerHTML = '';
+
+            if (visits.length === 0) {
+                showStatusMessage('아직 방문 기록이 없습니다.<br>문화시설을 다녀온 후 [방문 인증 💮]을 눌러 스탬프를 모아보세요!');
+                return;
+            }
+
+            visits.forEach(place => {
+                const cardEl = createPlaceCard(place, true);
+                listEl.appendChild(cardEl);
+            });
+        }
+
+        /**
+         * 15. 유틸리티 함수
+         */
+        function clearMarkers() {
+            searchMarkers.forEach(m => m.setMap(null));
+            searchMarkers = [];
+            infoWindow.close();
+        }
+
+        function showStatusMessage(msg) {
+            const listEl = document.getElementById('resultsList');
+            listEl.innerHTML = `<div class="status-message">${msg}</div>`;
+        }
+
+        function escapeQuotes(str) {
+            return str ? str.replace(/'/g, "\\'") : '';
+        }
+    </script>
+</body>
+</html>
