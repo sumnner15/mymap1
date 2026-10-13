@@ -568,6 +568,9 @@
         let currentEmoji = '🏛️';
         let currentTargetPlace = null; // 모달용 임시 객체
 
+        // 제외할 부속/편의시설 단어 목록
+        const EXCLUDED_KEYWORDS = ['화장실', '주차장', '매점', '카페', '자판기', '안내소', '관리사무소', '의무실', '수유실'];
+
         // 로컬스토리지 키
         const STORAGE_WISH = 'museum_passport_wishlist';
         const STORAGE_VISIT = 'museum_passport_visits';
@@ -698,11 +701,22 @@
         }
 
         /**
-         * 8. 검색 결과 콜백
+         * 8. 검색 결과 콜백 (부속시설 자동 제외 필터링 포함)
          */
         function placesSearchCallback(data, status) {
             if (status === kakao.maps.services.Status.OK) {
-                displayPlaces(data);
+                // 화장실, 주차장 등 제외 키워드가 들어간 항목 필터링
+                const filteredData = data.filter(place => {
+                    const name = place.place_name;
+                    return !EXCLUDED_KEYWORDS.some(keyword => name.includes(keyword));
+                });
+
+                if (filteredData.length > 0) {
+                    displayPlaces(filteredData);
+                } else {
+                    clearMarkers();
+                    showStatusMessage('주요 문화시설 검색 결과가 없습니다.');
+                }
             } else {
                 clearMarkers();
                 showStatusMessage('검색 결과가 없습니다. 다른 검색어나 지역을 입력해보세요.');
@@ -779,7 +793,7 @@
         }
 
         /**
-         * 11. 카드 HTML 요소 생성 (수정된 개별 장소명 및 청록색 스탬프 디자인 반영)
+         * 11. 카드 HTML 요소 생성
          */
         function createPlaceCard(place, isPassport = false) {
             const card = document.createElement('div');
@@ -794,7 +808,6 @@
             let actionButtonsHTML = '';
 
             if (isPassport) {
-                // 원형 청록색 스탬프 + 감상평 문구 구성
                 actionButtonsHTML = `
                     <div class="stamp-wrapper">
                         <div class="passport-review-box">
@@ -933,7 +946,7 @@
             const visits = getVisitRecords();
             const existingRecord = visits.find(v => v.id === placeId);
 
-            const today = new Date().toISOString().substring(0, 10); // 기본값: 오늘 YYYY-MM-DD
+            const today = new Date().toISOString().substring(0, 10);
 
             if (isEdit && existingRecord) {
                 currentTargetPlace = existingRecord;
@@ -968,7 +981,6 @@
                 return;
             }
 
-            // 날짜 포맷 변환 (YYYY-MM-DD -> YYYY. MM. DD.)
             const dateParts = rawDate.split('-');
             const formattedDate = `${dateParts[0]}. ${dateParts[1]}. ${dateParts[2]}.`;
 
