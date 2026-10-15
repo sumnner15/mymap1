@@ -680,7 +680,7 @@
         }
 
         /**
-         * 7. 검색어 입력 처리 (지역명 검색)
+         * 7. 검색어 입력 처리 (지역명 키워드 검색 또는 내 위치 주변 검색)
          */
         function handleKeyPress(e) {
             if (e.key === 'Enter') searchPlacesByKeyword();
@@ -693,51 +693,64 @@
                 return;
             }
 
+            // 지역명 키워드가 입력되었을 경우 해당 지역 중심 검색
             const searchPattern = `${keyword} ${currentCategory}`;
-            placesService.keywordSearch(searchPattern, placesSearchCallback);
+            placesService.keywordSearch(searchPattern, (data, status) => {
+                if (status === kakao.maps.services.Status.OK) {
+                    processSearchData(data, true); // 검색어 검색일 때는 범위 자동 조절
+                } else {
+                    clearMarkers();
+                    showStatusMessage('검색 결과가 없습니다. 다른 지역명을 입력해보세요.');
+                }
+            });
         }
 
         function searchCategoryPlaces() {
-            placesService.keywordSearch(currentCategory, placesSearchCallback, {
-                location: map.getCenter()
+            // 위치 기반 검색: 내 현재 위치(지도 중심) 기준 반경 10km 이내, 거리순 정렬
+            placesService.keywordSearch(currentCategory, (data, status) => {
+                if (status === kakao.maps.services.Status.OK) {
+                    processSearchData(data, false); // 주변 검색 시 중심 및 줌 레벨 고정
+                } else {
+                    clearMarkers();
+                    showStatusMessage('주변에 해당 문화시설이 없습니다.');
+                }
+            }, {
+                location: map.getCenter(),
+                radius: 10000, // 반경 10km 제한
+                sort: kakao.maps.services.SortBy.DISTANCE // 가까운 거리순 정렬
             });
         }
 
         /**
-         * 8. 검색 결과 콜백 (3중 정밀 필터링 적용)
+         * 8. 검색 데이터 필터링 및 지도 표시 처리
          */
-        function placesSearchCallback(data, status) {
-            if (status === kakao.maps.services.Status.OK) {
-                const filteredData = data.filter(place => {
-                    const name = place.place_name || '';
-                    const category = place.category_name || '';
+        function processSearchData(data, isKeywordSearch = false) {
+            const filteredData = data.filter(place => {
+                const name = place.place_name || '';
+                const category = place.category_name || '';
 
-                    const cleanName = name.replace(/\s+/g, '');
-                    const hasExcludedKeyword = EXCLUDED_KEYWORDS.some(keyword => cleanName.includes(keyword));
-                    if (hasExcludedKeyword) return false;
+                const cleanName = name.replace(/\s+/g, '');
+                const hasExcludedKeyword = EXCLUDED_KEYWORDS.some(keyword => cleanName.includes(keyword));
+                if (hasExcludedKeyword) return false;
 
-                    const hasExcludedCategory = EXCLUDED_KEYWORDS.some(keyword => category.includes(keyword));
-                    if (hasExcludedCategory) return false;
+                const hasExcludedCategory = EXCLUDED_KEYWORDS.some(keyword => category.includes(keyword));
+                if (hasExcludedCategory) return false;
 
-                    return true;
-                });
+                return true;
+            });
 
-                if (filteredData.length > 0) {
-                    displayPlaces(filteredData);
-                } else {
-                    clearMarkers();
-                    showStatusMessage('주요 문화시설 검색 결과가 없습니다.');
-                }
+            if (filteredData.length > 0) {
+                displayPlaces(filteredData, isKeywordSearch);
             } else {
                 clearMarkers();
-                showStatusMessage('검색 결과가 없습니다. 다른 검색어나 지역을 입력해보세요.');
+                showStatusMessage('주요 문화시설 검색 결과가 없습니다.');
             }
         }
 
         /**
          * 9. 장소 결과 표시 및 이모지 커스텀 마커 생성
          */
-        function displayPlaces(places) {
+        function displayPlaces(places, isKeywordSearch = false) {
             const listEl = document.getElementById('resultsList');
             clearMarkers();
             listEl.innerHTML = '';
@@ -762,7 +775,10 @@
                 listEl.appendChild(cardEl);
             });
 
-            map.setBounds(bounds);
+            // 특정 지역명 검색했을 때만 지도 범위를 결과에 맞춰 조절
+            if (isKeywordSearch && !bounds.isEmpty()) {
+                map.setBounds(bounds);
+            }
         }
 
         /**
@@ -945,7 +961,7 @@
         }
 
         /**
-         * 14. 방문 기록 & 스탬프 기능 (나의 여권) - 지도 연동 업데이트
+         * 14. 방문 기록 & 스탬프 기능 (나의 여권)
          */
         function getVisitRecords() {
             return JSON.parse(localStorage.getItem(STORAGE_VISIT) || '[]');
@@ -1051,7 +1067,6 @@
             visits.forEach(place => {
                 const cardEl = createPlaceCard(place, true);
 
-                // 좌표(x, y) 정보가 있는 경우 지도상 마커 표시 및 클릭 시 지도 이동 연동
                 if (place.x && place.y) {
                     const pos = new kakao.maps.LatLng(place.y, place.x);
                     const marker = createCustomEmojiMarker(pos, '💮');
